@@ -110,7 +110,7 @@ const ModalManager = {
             console.log('Modal found, showing...');
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            
+
             // Add animation classes if they exist
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) {
@@ -131,7 +131,7 @@ const ModalManager = {
                 modalContent.classList.remove('show');
             }
             modal.classList.remove('show');
-            
+
             setTimeout(() => {
                 modal.classList.add('hidden');
                 document.body.style.overflow = '';
@@ -463,7 +463,7 @@ const AuthManager = {
         // Clear client-side data instantly
         sessionStorage.clear();
         localStorage.clear();
-        
+
         // Instant redirect - bypass server processing for speed
         document.cookie = "PHPSESSID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         window.location.replace('../index.php');
@@ -553,10 +553,10 @@ const LogoEditor = {
             if (data.success) {
                 this.showMessage('Logo actualizado exitosamente', 'success');
                 this.loadCurrentLogo();
-                
+
                 // Update navigation logo immediately
                 this.updateNavigationLogo(data.logo_url);
-                
+
                 // Reset form
                 fileInput.value = '';
                 document.getElementById('logo-preview').classList.add('hidden');
@@ -636,9 +636,9 @@ const LogoEditor = {
                     ${logoContent}
                 </div>
             `;
-            
+
             document.body.appendChild(testSplash);
-            
+
             // Remove after animation completes (5.3 seconds for smooth cleanup)
             setTimeout(() => {
                 testSplash.style.transition = 'opacity 0.3s ease';
@@ -757,14 +757,14 @@ const ContentEditor = {
         .then(data => {
             if (data.success) {
                 ContentEditor.showMessage('Contenido actualizado exitosamente', 'success');
-                
+
                 // Update the navigation title immediately
                 const newTitle = document.getElementById('main-title').value;
                 const navTitle = document.querySelector('nav h1');
                 if (navTitle && newTitle) {
                     navTitle.textContent = newTitle;
                 }
-                
+
                 // Update page title
                 if (newTitle) {
                     document.title = newTitle + ' - Kingdom of Habbo';
@@ -917,7 +917,7 @@ const SplashLogoManager = {
         // Show main content with fast, smooth animations
         const elements = document.querySelectorAll('main, nav, footer');
         let delay = 0;
-        
+
         elements.forEach((element, index) => {
             if (element) {
                 setTimeout(() => {
@@ -936,7 +936,7 @@ const SplashLogoManager = {
             // Create splash immediately with default logo
             const splashDiv = document.createElement('div');
             splashDiv.className = 'splash-logo';
-            
+
             // Default logo content
             let logoContent = `
                 <svg viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400">
@@ -944,7 +944,14 @@ const SplashLogoManager = {
                 </svg>
             `;
 
+            // Get page title from navigation or use default
+            const navTitle = document.querySelector('nav h1');
+            const pageTitle = navTitle ? navTitle.textContent : 'Reino de Habbo';
+
             splashDiv.innerHTML = `
+                <div class="splash-title-content">
+                    <h1 class="splash-title">${pageTitle}</h1>
+                </div>
                 <div class="splash-logo-content">
                     ${logoContent}
                 </div>
@@ -952,9 +959,9 @@ const SplashLogoManager = {
 
             // Add to DOM immediately with forced hardware acceleration
             document.body.appendChild(splashDiv);
-            
+
             // Force GPU acceleration
-            splashDiv.style.transform = 'translate3d(0,0,0)';
+            splashDiv.style.transform = 'translate3d(0, 0, 0)';
 
             // Try to load custom logo in background (non-blocking)
             fetch('api/endpoints.php?action=get_logo')
@@ -971,21 +978,36 @@ const SplashLogoManager = {
                     console.log('Using default logo');
                 });
 
+            // Try to load custom title in background (non-blocking)
+            fetch('api/endpoints.php?action=get_content')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.main_title) {
+                        const titleContainer = splashDiv.querySelector('.splash-title');
+                        if (titleContainer) {
+                            titleContainer.textContent = data.data.main_title;
+                        }
+                    }
+                })
+                .catch(() => {
+                    console.log('Using default title');
+                });
+
             // Start showing content early while splash is still animating
             setTimeout(() => {
                 this.showMainContent();
-            }, 2500);
+            }, 2000);
 
             // Remove splash after animation completes (3 seconds total)
             setTimeout(() => {
-                splashDiv.style.transition = 'opacity 0.2s ease-out';
+                splashDiv.style.transition = 'opacity 0.3s ease-out';
                 splashDiv.style.opacity = '0';
-                
+
                 setTimeout(() => {
                     if (splashDiv.parentNode) {
                         splashDiv.parentNode.removeChild(splashDiv);
                     }
-                }, 200);
+                }, 300);
             }, 3000);
 
         } catch (error) {
@@ -1008,16 +1030,16 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             AuthManager.initialize();
             console.log('AuthManager initialized');
-            
+
             SidebarManager.initialize();
             console.log('SidebarManager initialized');
-            
+
             ContentEditor.initialize();
             console.log('ContentEditor initialized');
-            
+
             LogoEditor.initialize();
             console.log('LogoEditor initialized');
-            
+
             initializeEventListeners();
             console.log('Event listeners initialized');
         } catch (error) {
