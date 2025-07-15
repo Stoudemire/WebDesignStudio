@@ -893,55 +893,105 @@ function initializeEventListeners() {
     }, { passive: false });
 }
 
-// Splash Logo Manager for Index Page
+// Splash Logo Manager for Index Page - Optimized
 const SplashLogoManager = {
     initialize() {
         // Only run on index page
         if (window.location.pathname.includes('index.php') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
-            this.createSplashLogo();
+            this.preparePageForSplash();
+            this.createOptimizedSplashLogo();
         }
     },
 
-    async createSplashLogo() {
-        try {
-            // Try to get custom logo first
-            const response = await fetch('api/endpoints.php?action=get_logo');
-            const data = await response.json();
-            
-            let logoContent;
-            if (data.success && data.logo_url) {
-                logoContent = `<img src="${data.logo_url}" alt="Logo">`;
-            } else {
-                // Default crown icon
-                logoContent = `
-                    <svg viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400">
-                        <path d="M12 6l4 6h5l-7-11zm0 0L8 12H3l7-11zM2 12h20l-2 7H4z"/>
-                    </svg>
-                `;
+    preparePageForSplash() {
+        // Hide main content immediately with CSS class
+        const elements = document.querySelectorAll('main, nav, footer');
+        elements.forEach(element => {
+            if (element) {
+                element.classList.add('splash-hidden');
             }
+        });
+    },
 
-            // Create splash logo element with optimized structure
+    showMainContent() {
+        // Show main content with fast, smooth animations
+        const elements = document.querySelectorAll('main, nav, footer');
+        let delay = 0;
+        
+        elements.forEach((element, index) => {
+            if (element) {
+                setTimeout(() => {
+                    element.classList.remove('splash-hidden');
+                    element.classList.add('content-reveal');
+                    // Force hardware acceleration for each element
+                    element.style.transform = 'translate3d(0,0,0)';
+                }, delay);
+                delay += 50; // Much faster stagger for immediate reveal
+            }
+        });
+    },
+
+    async createOptimizedSplashLogo() {
+        try {
+            // Create splash immediately with default logo
             const splashDiv = document.createElement('div');
             splashDiv.className = 'splash-logo';
+            
+            // Default logo content
+            let logoContent = `
+                <svg viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400">
+                    <path d="M12 6l4 6h5l-7-11zm0 0L8 12H3l7-11zM2 12h20l-2 7H4z"/>
+                </svg>
+            `;
+
             splashDiv.innerHTML = `
                 <div class="splash-logo-content">
                     ${logoContent}
                 </div>
             `;
 
-            // Add to DOM with immediate optimization
+            // Add to DOM immediately with forced hardware acceleration
             document.body.appendChild(splashDiv);
+            
+            // Force GPU acceleration
+            splashDiv.style.transform = 'translate3d(0,0,0)';
 
-            // Remove after animation completes (5 seconds)
+            // Try to load custom logo in background (non-blocking)
+            fetch('api/endpoints.php?action=get_logo')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.logo_url) {
+                        const logoContainer = splashDiv.querySelector('.splash-logo-content');
+                        if (logoContainer) {
+                            logoContainer.innerHTML = `<img src="${data.logo_url}" alt="Logo">`;
+                        }
+                    }
+                })
+                .catch(() => {
+                    console.log('Using default logo');
+                });
+
+            // Start showing content early while splash is still animating
             setTimeout(() => {
-                splashDiv.style.transition = 'opacity 0.3s ease';
+                this.showMainContent();
+            }, 2500);
+
+            // Remove splash after animation completes (3 seconds total)
+            setTimeout(() => {
+                splashDiv.style.transition = 'opacity 0.2s ease-out';
                 splashDiv.style.opacity = '0';
+                
                 setTimeout(() => {
-                    splashDiv.remove();
-                }, 300);
-            }, 5000);
+                    if (splashDiv.parentNode) {
+                        splashDiv.parentNode.removeChild(splashDiv);
+                    }
+                }, 200);
+            }, 3000);
+
         } catch (error) {
             console.error('Error creating splash logo:', error);
+            // If there's an error, show main content immediately
+            this.showMainContent();
         }
     }
 };
