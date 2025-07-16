@@ -106,7 +106,6 @@ try {
                 </div>
 
                 <!-- Editor de Contenido -->
-                <?php if (in_array($user['role'], ['administrador', 'desarrollador'])): ?>
                 <div class="sidebar-item p-3 cursor-pointer" data-section="editor">
                     <div class="flex items-center space-x-3">
                         <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
@@ -115,17 +114,6 @@ try {
                         <span class="menu-text font-medium">Editor de Contenido</span>
                     </div>
                 </div>
-
-                <!-- Editor de Logo -->
-                <div class="sidebar-item p-3 cursor-pointer" data-section="logo">
-                    <div class="flex items-center space-x-3">
-                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                        </svg>
-                        <span class="menu-text font-medium">Editor de Logo</span>
-                    </div>
-                </div>
-                <?php endif; ?>
 
             </div>
         </div>
@@ -285,7 +273,6 @@ try {
                 </div>
             </div>
 
-            <?php if (in_array($user['role'], ['administrador', 'desarrollador'])): ?>
             <!-- Content Editor Form -->
             <div class="glass rounded-2xl p-8">
                 <form id="content-editor-form" class="space-y-6">
@@ -353,115 +340,6 @@ try {
                     </div>
                 </form>
             </div>
-            <?php else: ?>
-            <!-- Access Denied Message -->
-            <div class="glass rounded-2xl p-8">
-                <div class="text-center">
-                    <div class="text-red-400 mb-4">
-                        <svg class="w-16 h-16 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-cinzel font-bold text-red-400 mb-2">
-                        Acceso Denegado
-                    </h3>
-                    <p class="text-gray-300 mb-4">
-                        Esta sección requiere permisos de administrador o desarrollador.
-                    </p>
-                    <p class="text-gray-400 text-sm">
-                        Tu rango actual: <span class="text-yellow-400 font-semibold"><?php echo htmlspecialchars(ucfirst($user['role'])); ?></span>
-                    </p>
-                </div>
-            </div>
-            <?php endif; ?>
-        </section>
-
-        <!-- Editor de Logo Section -->
-        <section id="logo-section" class="content-section hidden">
-            <div class="glass rounded-2xl p-8 mb-8">
-                <div class="text-center mb-8">
-                    <div class="text-yellow-400 mb-4">
-                        <svg class="w-16 h-16 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                        </svg>
-                    </div>
-                    <h2 class="text-3xl font-cinzel-decorative font-bold text-yellow-400 mb-2">
-                        Editor de Logo
-                    </h2>
-                    <p class="text-gray-300">Personaliza el logo de tu reino</p>
-                </div>
-            </div>
-
-            <?php if (in_array($user['role'], ['administrador', 'desarrollador'])): ?>
-            <!-- Logo Editor Form -->
-            <div class="glass rounded-2xl p-8">
-                <div class="grid md:grid-cols-2 gap-8">
-                    <!-- Upload Section -->
-                    <div>
-                        <h3 class="text-xl font-cinzel font-bold text-yellow-400 mb-4">Subir Nuevo Logo</h3>
-                        <div class="space-y-4">
-                            <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-yellow-400 transition-colors">
-                                <input type="file" id="logo-upload" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif" class="hidden">
-                                <label for="logo-upload" class="cursor-pointer">
-                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                                    </svg>
-                                    <p class="text-gray-300 mb-2">Haz clic para seleccionar un archivo</p>
-                                    <p class="text-gray-500 text-sm">PNG, JPG, SVG, GIF hasta 2MB</p>
-                                </label>
-                            </div>
-                            <div id="logo-preview" class="hidden">
-                                <img id="preview-image" class="w-full h-32 object-contain bg-gray-800 rounded-lg" alt="Preview">
-                            </div>
-                            <button id="save-logo" class="w-full px-6 py-3 rounded-lg royal-gradient text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                Guardar Logo
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Current Logo Section -->
-                    <div>
-                        <h3 class="text-xl font-cinzel font-bold text-yellow-400 mb-4">Logo Actual</h3>
-                        <div class="bg-gray-800 rounded-lg p-6 text-center">
-                            <div id="current-logo" class="h-32 flex items-center justify-center">
-                                <svg class="w-16 h-16 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 6l4 6h5l-7-11zm0 0L8 12H3l7-11zM2 12h20l-2 7H4z"/>
-                                </svg>
-                            </div>
-                            <p class="text-gray-400 mt-4">Logo por defecto</p>
-                        </div>
-                        <div class="mt-4 space-y-2">
-                            <button id="reset-logo" class="w-full px-6 py-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors">
-                                Restablecer Logo por Defecto
-                            </button>
-                            <button id="test-float-effect" class="w-full px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                                Probar Efecto Flotante
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php else: ?>
-            <!-- Access Denied Message -->
-            <div class="glass rounded-2xl p-8">
-                <div class="text-center">
-                    <div class="text-red-400 mb-4">
-                        <svg class="w-16 h-16 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-cinzel font-bold text-red-400 mb-2">
-                        Acceso Denegado
-                    </h3>
-                    <p class="text-gray-300 mb-4">
-                        Esta sección requiere permisos de administrador o desarrollador.
-                    </p>
-                    <p class="text-gray-400 text-sm">
-                        Tu rango actual: <span class="text-yellow-400 font-semibold"><?php echo htmlspecialchars(ucfirst($user['role'])); ?></span>
-                    </p>
-                </div>
-            </div>
-            <?php endif; ?>
         </section>
 
 

@@ -110,7 +110,7 @@ const ModalManager = {
             console.log('Modal found, showing...');
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-
+            
             // Add animation classes if they exist
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) {
@@ -131,7 +131,7 @@ const ModalManager = {
                 modalContent.classList.remove('show');
             }
             modal.classList.remove('show');
-
+            
             setTimeout(() => {
                 modal.classList.add('hidden');
                 document.body.style.overflow = '';
@@ -463,230 +463,10 @@ const AuthManager = {
         // Clear client-side data instantly
         sessionStorage.clear();
         localStorage.clear();
-
+        
         // Instant redirect - bypass server processing for speed
         document.cookie = "PHPSESSID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         window.location.replace('../index.php');
-    }
-};
-
-// Logo Editor Functions
-const LogoEditor = {
-    initialize() {
-        const uploadInput = document.getElementById('logo-upload');
-        const previewDiv = document.getElementById('logo-preview');
-        const previewImg = document.getElementById('preview-image');
-        const saveBtn = document.getElementById('save-logo');
-        const resetBtn = document.getElementById('reset-logo');
-        const testFloatBtn = document.getElementById('test-float-effect');
-
-        if (uploadInput) {
-            uploadInput.addEventListener('change', this.handleFileUpload.bind(this));
-        }
-
-        if (saveBtn) {
-            saveBtn.addEventListener('click', this.saveLogo.bind(this));
-        }
-
-        if (resetBtn) {
-            resetBtn.addEventListener('click', this.resetLogo.bind(this));
-        }
-
-        if (testFloatBtn) {
-            testFloatBtn.addEventListener('click', this.testFloatEffect.bind(this));
-        }
-
-        this.loadCurrentLogo();
-    },
-
-    handleFileUpload(event) {
-        const file = event.target.files[0];
-        const previewDiv = document.getElementById('logo-preview');
-        const previewImg = document.getElementById('preview-image');
-        const saveBtn = document.getElementById('save-logo');
-
-        if (file) {
-            // Validate file type
-            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/gif'];
-            if (!allowedTypes.includes(file.type)) {
-                this.showMessage('Por favor selecciona un archivo PNG, JPG, SVG o GIF', 'error');
-                return;
-            }
-
-            // Validate file size (2MB max)
-            if (file.size > 2 * 1024 * 1024) {
-                this.showMessage('El archivo es demasiado grande. Máximo 2MB', 'error');
-                return;
-            }
-
-            // Show preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImg.src = e.target.result;
-                previewDiv.classList.remove('hidden');
-                previewDiv.classList.add('logo-preview');
-                saveBtn.disabled = false;
-            };
-            reader.readAsDataURL(file);
-        }
-    },
-
-    saveLogo() {
-        const fileInput = document.getElementById('logo-upload');
-        const file = fileInput.files[0];
-
-        if (!file) {
-            this.showMessage('Por favor selecciona un archivo', 'error');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('logo', file);
-        formData.append('action', 'upload_logo');
-
-        fetch('../api/endpoints.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                this.showMessage('Logo actualizado exitosamente', 'success');
-                this.loadCurrentLogo();
-
-                // Update navigation logo immediately
-                this.updateNavigationLogo(data.logo_url);
-
-                // Reset form
-                fileInput.value = '';
-                document.getElementById('logo-preview').classList.add('hidden');
-                document.getElementById('save-logo').disabled = true;
-            } else {
-                this.showMessage(data.message || 'Error al subir el logo', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            this.showMessage('Error de conexión', 'error');
-        });
-    },
-
-    loadCurrentLogo() {
-        fetch('../api/endpoints.php?action=get_logo')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.logo_url) {
-                const currentLogoDiv = document.getElementById('current-logo');
-                currentLogoDiv.innerHTML = `<img src="${data.logo_url}" alt="Logo actual" class="max-h-32 max-w-full object-contain">`;
-            }
-        })
-        .catch(error => {
-            console.error('Error loading current logo:', error);
-        });
-    },
-
-    resetLogo() {
-        if (confirm('¿Estás seguro de que quieres restablecer el logo por defecto?')) {
-            fetch('../api/endpoints.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'reset_logo'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.showMessage('Logo restablecido exitosamente', 'success');
-                    this.loadCurrentLogo();
-                    this.updateNavigationLogo(null); // Reset to default
-                } else {
-                    this.showMessage(data.message || 'Error al restablecer el logo', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                this.showMessage('Error de conexión', 'error');
-            });
-        }
-    },
-
-    testFloatEffect() {
-        // Create a temporary splash logo for testing with current logo
-        fetch('../api/endpoints.php?action=get_logo')
-        .then(response => response.json())
-        .then(data => {
-            let logoContent;
-            if (data.success && data.logo_url) {
-                logoContent = `<img src="${data.logo_url}" alt="Logo">`;
-            } else {
-                logoContent = `
-                    <svg viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400">
-                        <path d="M12 6l4 6h5l-7-11zm0 0L8 12H3l7-11zM2 12h20l-2 7H4z"/>
-                    </svg>
-                `;
-            }
-
-            const testSplash = document.createElement('div');
-            testSplash.className = 'splash-logo';
-            testSplash.innerHTML = `
-                <div class="splash-logo-content">
-                    ${logoContent}
-                </div>
-            `;
-
-            document.body.appendChild(testSplash);
-
-            // Remove after animation completes (5.3 seconds for smooth cleanup)
-            setTimeout(() => {
-                testSplash.style.transition = 'opacity 0.3s ease';
-                testSplash.style.opacity = '0';
-                setTimeout(() => {
-                    testSplash.remove();
-                }, 300);
-            }, 5300);
-        })
-        .catch(error => {
-            console.error('Error testing splash logo:', error);
-        });
-    },
-
-    updateNavigationLogo(logoUrl) {
-        const navLogo = document.querySelector('nav .crown-icon');
-        if (navLogo) {
-            if (logoUrl) {
-                navLogo.innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-8 h-8 object-contain">`;
-            } else {
-                navLogo.innerHTML = `
-                    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 6l4 6h5l-7-11zm0 0L8 12H3l7-11zM2 12h20l-2 7H4z"/>
-                    </svg>
-                `;
-            }
-        }
-    },
-
-    showMessage(message, type) {
-        const existingMessage = document.querySelector('.logo-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `logo-message ${type === 'success' ? 'success-message' : 'error-message'} mb-4 p-3 rounded`;
-        messageDiv.textContent = message;
-
-        const section = document.getElementById('logo-section');
-        const firstCard = section.querySelector('.glass');
-        if (firstCard) {
-            firstCard.insertAdjacentElement('afterend', messageDiv);
-
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 5000);
-        }
     }
 };
 
@@ -757,14 +537,14 @@ const ContentEditor = {
         .then(data => {
             if (data.success) {
                 ContentEditor.showMessage('Contenido actualizado exitosamente', 'success');
-
+                
                 // Update the navigation title immediately
                 const newTitle = document.getElementById('main-title').value;
                 const navTitle = document.querySelector('nav h1');
                 if (navTitle && newTitle) {
                     navTitle.textContent = newTitle;
                 }
-
+                
                 // Update page title
                 if (newTitle) {
                     document.title = newTitle + ' - Kingdom of Habbo';
@@ -893,153 +673,22 @@ function initializeEventListeners() {
     }, { passive: false });
 }
 
-// Splash Logo Manager for Index Page - Optimized
-const SplashLogoManager = {
-    initialize() {
-        // Only run on index page
-        if (window.location.pathname.includes('index.php') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
-            this.preparePageForSplash();
-            this.createOptimizedSplashLogo();
-        }
-    },
-
-    preparePageForSplash() {
-        // Hide main content immediately with CSS class
-        const elements = document.querySelectorAll('main, nav, footer');
-        elements.forEach(element => {
-            if (element) {
-                element.classList.add('splash-hidden');
-            }
-        });
-    },
-
-    showMainContent() {
-        // Show main content with fast, smooth animations
-        const elements = document.querySelectorAll('main, nav, footer');
-        let delay = 0;
-
-        elements.forEach((element, index) => {
-            if (element) {
-                setTimeout(() => {
-                    element.classList.remove('splash-hidden');
-                    element.classList.add('content-reveal');
-                    // Force hardware acceleration for each element
-                    element.style.transform = 'translate3d(0,0,0)';
-                }, delay);
-                delay += 50; // Much faster stagger for immediate reveal
-            }
-        });
-    },
-
-    async createOptimizedSplashLogo() {
-        try {
-            // Create splash immediately with default logo
-            const splashDiv = document.createElement('div');
-            splashDiv.className = 'splash-logo';
-
-            // Default logo content
-            let logoContent = `
-                <svg viewBox="0 0 24 24" fill="currentColor" class="text-yellow-400">
-                    <path d="M12 6l4 6h5l-7-11zm0 0L8 12H3l7-11zM2 12h20l-2 7H4z"/>
-                </svg>
-            `;
-
-            // Get page title from navigation or use default
-            const navTitle = document.querySelector('nav h1');
-            const pageTitle = navTitle ? navTitle.textContent : 'Reino de Habbo';
-
-            splashDiv.innerHTML = `
-                <div class="splash-title-content">
-                    <h1 class="splash-title">${pageTitle}</h1>
-                </div>
-                <div class="splash-logo-content">
-                    ${logoContent}
-                </div>
-            `;
-
-            // Add to DOM immediately with forced hardware acceleration
-            document.body.appendChild(splashDiv);
-
-            // Force GPU acceleration
-            splashDiv.style.transform = 'translate3d(0, 0, 0)';
-
-            // Try to load custom logo in background (non-blocking)
-            fetch('api/endpoints.php?action=get_logo')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.logo_url) {
-                        const logoContainer = splashDiv.querySelector('.splash-logo-content');
-                        if (logoContainer) {
-                            logoContainer.innerHTML = `<img src="${data.logo_url}" alt="Logo">`;
-                        }
-                    }
-                })
-                .catch(() => {
-                    console.log('Using default logo');
-                });
-
-            // Try to load custom title in background (non-blocking)
-            fetch('api/endpoints.php?action=get_content')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data && data.data.main_title) {
-                        const titleContainer = splashDiv.querySelector('.splash-title');
-                        if (titleContainer) {
-                            titleContainer.textContent = data.data.main_title;
-                        }
-                    }
-                })
-                .catch(() => {
-                    console.log('Using default title');
-                });
-
-            // Start showing content early while splash is still animating
-            setTimeout(() => {
-                this.showMainContent();
-            }, 2000);
-
-            // Remove splash after animation completes (3 seconds total)
-            setTimeout(() => {
-                splashDiv.style.transition = 'opacity 0.3s ease-out';
-                splashDiv.style.opacity = '0';
-
-                setTimeout(() => {
-                    if (splashDiv.parentNode) {
-                        splashDiv.parentNode.removeChild(splashDiv);
-                    }
-                }, 300);
-            }, 3000);
-
-        } catch (error) {
-            console.error('Error creating splash logo:', error);
-            // If there's an error, show main content immediately
-            this.showMainContent();
-        }
-    }
-};
-
 // DOM Ready Handler
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing app...');
-
-    // Initialize splash logo for index page
-    SplashLogoManager.initialize();
 
     // Initialize all managers in sequence
     setTimeout(() => {
         try {
             AuthManager.initialize();
             console.log('AuthManager initialized');
-
+            
             SidebarManager.initialize();
             console.log('SidebarManager initialized');
-
+            
             ContentEditor.initialize();
             console.log('ContentEditor initialized');
-
-            LogoEditor.initialize();
-            console.log('LogoEditor initialized');
-
+            
             initializeEventListeners();
             console.log('Event listeners initialized');
         } catch (error) {
