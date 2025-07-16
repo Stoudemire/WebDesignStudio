@@ -57,7 +57,7 @@ body {
 
 /* Sidebar Styles */
 .sidebar {
-    transition: width 0.3s ease;
+    transition: width 0.15s ease-out;
 }
 
 .sidebar.collapsed {
@@ -72,7 +72,7 @@ body {
     transition: all 0.3s ease;
 }
 
-.sidebar-item:hover {
+.sidebar-item:hover:not(.active) {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem;
 }
@@ -80,7 +80,11 @@ body {
 .sidebar-item.active {
     background: rgba(255, 215, 0, 0.2);
     border-radius: 0.5rem;
-    border-left: 4px solid hsl(47, 96%, 53%);
+    box-shadow: inset 4px 0 0 hsl(47, 96%, 53%);
+}
+
+.sidebar-item.active:hover {
+    background: rgba(255, 215, 0, 0.25);
 }
 
 .sidebar.collapsed .sidebar-item.active {
@@ -169,18 +173,21 @@ body {
 }
 
 .menu-text {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.1s ease-out, width 0.1s ease-out;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .sidebar.collapsed .menu-text {
     opacity: 0;
     width: 0;
-    overflow: hidden;
+    transition-delay: 0s;
 }
 
 .sidebar.expanded .menu-text {
     opacity: 1;
     width: auto;
+    transition-delay: 0.05s;
 }
 
 /* Icons */
